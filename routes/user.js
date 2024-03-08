@@ -4,6 +4,12 @@ const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
 
-const knex = require("knex")(require("../../knexfile"));
+const knex = require("knex")(require("../knexfile"));
 
-router.post
+// router.post("/login", (req/res) => {
+
+// });
+
+// router.post("/register", (req/res) => {
+
+// });

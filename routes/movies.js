@@ -4,18 +4,17 @@ const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
 
-
 const {
   validateItemInput,
   validateMiddleware,
-} = require("../../middleware/validationMiddleware");
+} = require("../middleware/validationMiddleware");
 
-const knex = require("knex")(require("../../knexfile"));
+const knex = require("knex")(require("../knexfile"));
 
-const API_KEY = "YOUR_TMDB_API_KEY"; // Replace this with your actual TMDb API key
+const API_KEY = "YOUR_TMDB_API_KEY";
 
 router.get("/search", async (req, res) => {
-  const query = req.query.query; 
+  const query = req.query.query;
 
   try {
     const response = await axios.get(
