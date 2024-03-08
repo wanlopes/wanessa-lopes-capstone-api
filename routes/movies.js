@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
+const axios = require("axios");
+require("dotenv").config();
 
 const {
   validateItemInput,
@@ -11,17 +13,15 @@ const {
 
 const knex = require("knex")(require("../knexfile"));
 
-const API_KEY = "YOUR_TMDB_API_KEY";
-
 router.get("/search", async (req, res) => {
   const query = req.query.query;
-
+  console.log(query);
   try {
     const response = await axios.get(
       `https://api.themoviedb.org/3/search/movie`,
       {
         params: {
-          api_key: API_KEY,
+          api_key: process.env.YOUR_TMDB_API_KEY,
           query: query,
           include_adult: false,
         },
