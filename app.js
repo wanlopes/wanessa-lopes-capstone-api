@@ -19,9 +19,11 @@ app.use(express.json());
 
 //route imports
 const moviesRoute = require("./routes/movies");
+const userRoute = require("./routes/user");
 
 //routes
 app.use("/api/movies", moviesRoute);
+app.use("/api/user", userRoute);
 
 //test connetion routes
 app.get("/test1", (req, res) => {
