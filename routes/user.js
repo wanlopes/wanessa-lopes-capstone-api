@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 require("dotenv").config();
-const axios = require("axios");
+
 
 const knex = require("knex")(require("../knexfile"));
 
@@ -42,6 +42,7 @@ router.post("/register", async (req, res) => {
     email, 
     password, 
   } = req.body;
+
   if (
     !username ||
     !email ||
@@ -52,16 +53,26 @@ router.post("/register", async (req, res) => {
 
   const emailRegex =
     /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
-  if (!emailRegex.test(contact_email)) {
+  if (!emailRegex.test(email)) {
     return res.status(400).json({ message: "Invalid email address" });
   }
 
-  knex("user")
-    .insert ({
-      username, 
-      email, 
-      password, 
-    })
+   bcrypt
+     .hash(password, 10)
+     .then((hashedPassword) => {
+       return knex("user").insert({
+         username,
+         email,
+         password: hashedPassword,
+       });
+     })
+     .then(() => {
+       res.status(201).json({ message: "User registered successfully" });
+     })
+     .catch((error) => {
+       console.error("Error registering user:", error);
+       res.status(500).json({ message: "Internal server error" });
+     });
 });
 
 module.exports = router;
