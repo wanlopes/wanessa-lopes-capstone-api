@@ -1,7 +1,7 @@
-const { body, validationResult } = require("express-validator");
+// const { body, validationResult } = require("express-validator");
  
-//Validate user info
-const validateUserInput = {
+// //Validate user info
+// const validateUserInput = {
 //     body("username")
 //         .trim()
 //         .notEmpty()
@@ -32,10 +32,10 @@ const validateUserInput = {
 //         return res.status(400).json({ errors: errors.array() });
 //     }
 //     next();
-};
+// };
 
-module.exports = {
-    validateUserInput,
-    // handleValidationErrors
-};
+// module.exports = {
+//     validateUserInput,
+//     // handleValidationErrors
+// };
     

@@ -36,8 +36,32 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// router.post("/register", (req/res) => {
+router.post("/register", async (req, res) => {
+  const { 
+    username, 
+    email, 
+    password, 
+  } = req.body;
+  if (
+    !username ||
+    !email ||
+    !password 
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
-// });
+  const emailRegex =
+    /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+  if (!emailRegex.test(contact_email)) {
+    return res.status(400).json({ message: "Invalid email address" });
+  }
+
+  knex("user")
+    .insert ({
+      username, 
+      email, 
+      password, 
+    })
+});
 
 module.exports = router;
