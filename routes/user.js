@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 require("dotenv").config();
-
+const { v4: uuidv4 } = require("uuid");
 
 const knex = require("knex")(require("../knexfile"));
 
@@ -11,7 +11,7 @@ router.post("/login", async (req, res) => {
   console.log(req.body);
   try {
     // Query the database to find the user by username or email
-    const user = await knex("user").where("name", username).first();
+    const user = await knex("user").where("username", username).first();
     console.log(user);
     if (user) {
       // Compare passwords
@@ -37,17 +37,9 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-  const { 
-    username, 
-    email, 
-    password, 
-  } = req.body;
+  const { username, email, password } = req.body;
 
-  if (
-    !username ||
-    !email ||
-    !password 
-  ) {
+  if (!username || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -57,22 +49,22 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ message: "Invalid email address" });
   }
 
-   bcrypt
-     .hash(password, 10)
-     .then((hashedPassword) => {
-       return knex("user").insert({
-         username,
-         email,
-         password: hashedPassword,
-       });
-     })
-     .then(() => {
-       res.status(201).json({ message: "User registered successfully" });
-     })
-     .catch((error) => {
-       console.error("Error registering user:", error);
-       res.status(500).json({ message: "Internal server error" });
-     });
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = uuidv4();
+
+    await knex("user").insert({
+      id: userId,
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 module.exports = router;
