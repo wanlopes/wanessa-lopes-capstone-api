@@ -4,6 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon app.js",
+    "db:init": "knex migrate:latest",
+    "db:down": "knex migrate:down",
+    "db:seed": "knex seed:run",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
