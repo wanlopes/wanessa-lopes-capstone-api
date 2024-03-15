@@ -3,10 +3,14 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.createTable("lists", (table) => {
+  return knex.schema.createTable("user_list", (table) => {
     table.increments("id").primary();
-    table.string("name").notNullable();
-    table.string("poster_path").notNullable();
+    table
+      .integer("user_id")
+      .unsigned()
+      .references("user.id")
+      .onUpdate("CASCADE")
+      .onDelete("CASCADE");
   });
 };
 
@@ -16,5 +20,5 @@ exports.up = function (knex) {
  */
 
 exports.down = function (knex) {
-  return knex.schema.dropTable("lists");
+  return knex.schema.dropTable("user_list");
 };
