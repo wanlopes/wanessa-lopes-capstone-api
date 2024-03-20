@@ -2,9 +2,13 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 require("dotenv").config();
-const { v4: uuidv4 } = require("uuid");
+const { v4: uuidv4 } = require("uuid"); 
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+
 
 const knex = require("knex")(require("../knexfile"));
+const secretKey = crypto.randomBytes(32).toString("hex");
 
 router.post("/login", async (req, res) => {
   const { username, email, password } = req.body;
@@ -19,7 +23,10 @@ router.post("/login", async (req, res) => {
 
       if (passwordMatch) {
         delete user.password;
-        res.status(200).json({ message: "Login successful", user });
+        const token = jwt.sign({ userId: user.id }, secretKey, {
+          expiresIn: "7d",
+        });
+        res.status(200).json({ message: "Login successful", user , token });
       } else {
         // Passwords don't match
         res
