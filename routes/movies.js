@@ -1,11 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-//TODO: To be remove
-const axiosCurlirize = require("axios-curlirize");
-axiosCurlirize(axios);
-
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const secretKey = process.env.JSON_SECRET_KEY;
 
 const {
   validateItemInput,
@@ -14,11 +12,10 @@ const {
 
 const knex = require("knex")(require("../knexfile"));
 
-router.get("/user/:userId", async (req, res) => {
-  let userId = req.params.userId;
+router.get("/user/", authorize, async (req, res) => {
+  let userId = req.decoded.userId;
   try {
     const movies = await knex("movies").where("user_id", userId);
-    console.log(movies);
     if (movies) {
       res
         .status(200)
@@ -34,39 +31,10 @@ router.get("/user/:userId", async (req, res) => {
 
 router.get("/search", async (req, res) => {
   const query = req.query.query;
-  console.log(req);
   try {
     const response = await fetchMoviesWithRetry(query);
-    // axios
-    //   .get(
-    //     "https://api.themoviedb.org/3/search/movie?api_key=d80a54a0422d5fff6149c48741c8bece&language=en-US&query=" +
-    //       query
-    //   )
-    //   .then((response) => {
-    //     console.log(response.data);
-    //     response.data.results.forEach((element) => {
-    //       console.log(element.title);
-    //     });
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
-
-    // response.data.forEach((element) => {
-    //   console.log(element);
-    // });
-    // const movies = response.data.results.map((movie) => ({
-    //   id: movie.id,
-    //   title: movie.title,
-    //   poster_path: movie.poster_path,
-    //   vote_average: movie.vote_average,
-    // }));
-
-    // res.json(movies);
-    console.log(response);
     res.status(200).json(response);
   } catch (error) {
-    // console.error("Error fetching data from TMDb:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -117,13 +85,6 @@ async function fetchMoviesWithRetry(query, retries = 20, delay = 10) {
       );
       if (![200, 304, 404].includes(response.status)) {
         console.log(response.status);
-      }
-      if (
-        response.status != 200 &&
-        response.status != 304 &&
-        response.status != 404
-      ) {
-        console.log(response.status);
         throw new Error(`Request failed`);
       }
       const movies = response.data.results.map((movie) => ({
@@ -134,11 +95,27 @@ async function fetchMoviesWithRetry(query, retries = 20, delay = 10) {
       }));
       return movies; // If successful, return data
     } catch (error) {
-      //console.error(`Attempt ${i + 1} failed:`, error.message);
       await new Promise((resolve) => setTimeout(resolve, delay)); // Wait for specified delay
     }
   }
   throw new Error(`Failed to fetch data after ${retries} attempts`);
+}
+
+function authorize(req, res, next) {
+  const token =
+    req.headers.authorization && req.headers.authorization.split(" ")[1];
+  if (!token) {
+    return res
+      .status(401)
+      .json({ error: { message: "Bearer token is missing" } });
+  }
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: { message: "Invalid token" } });
+    }
+    req.decoded = decoded;
+    next();
+  });
 }
 
 module.exports = router;
