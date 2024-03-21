@@ -39,25 +39,39 @@ router.get("/search", async (req, res) => {
   }
 });
 
-router.post("/update", async (req, res) => {
-  const {
-    id,
-    user_id,
-    title,
-    poster_path,
-    vote_average,
-    watch,
-    watched,
-    favorite,
-  } = req.body;
-  console.log(req.body);
+router.post("/update", authorize, async (req, res) => {
+  const { id, title, poster_path, vote_average } = req.body.movie;
+  const { listType } = req.body;
+  const { userId } = req.decoded;
   try {
-    const movie = await knex("movies").where("id", id).first();
-    console.log(movie);
+    const movie = await knex("movies")
+      .where("id", id)
+      .where("user_id", userId)
+      .first();
+
     if (movie) {
-      res.status(200).json({ message: "Movies was found", movie });
+      const updates = {};
+      updates[listType] = true;
+
+      await knex("movies")
+        .update(updates)
+        .where("id", id)
+        .where("user_id", userId);
+
+      res.status(204).json({ message: "Movie updated successfully" });
     } else {
-      res.status(404).json({ message: "Movie not found" });
+      await knex("movies").insert({
+        id: id,
+        user_id: userId,
+        title: title,
+        poster_path: poster_path,
+        vote_average: vote_average,
+        watch: listType === "watch" ? true : false,
+        watched: listType === "watched" ? true : false,
+        favorite: listType === "favorite" ? true : false,
+      });
+
+      res.status(204).json({ message: "Movie was added successfully!" });
     }
   } catch (error) {
     console.error("Error updating movie:", error);
