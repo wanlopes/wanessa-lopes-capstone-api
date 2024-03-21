@@ -79,6 +79,25 @@ router.post("/update", authorize, async (req, res) => {
   }
 });
 
+router.delete("/:id", authorize, async (req, res) => {
+  const { id } = req.params;
+  const { userId } = req.decoded;
+
+  try {
+    const movie = await knex("movies")
+      .where("id", id)
+      .where("user_id", userId)
+      .first();
+
+    await knex("movies").where("id", id).where("user_id", userId).del();
+
+    res.status(200).json({ message: "Movie deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting movie:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 async function fetchMoviesWithRetry(query, retries = 20, delay = 10) {
   for (let i = 0; i < retries; i++) {
     try {
