@@ -41,7 +41,7 @@ router.get("/search", async (req, res) => {
 
 router.post("/update", authorize, async (req, res) => {
   const { id, title, poster_path, vote_average } = req.body.movie;
-  const { listType } = req.body;
+  const { listType, action } = req.body;
   const { userId } = req.decoded;
   try {
     const movie = await knex("movies")
@@ -51,13 +51,12 @@ router.post("/update", authorize, async (req, res) => {
 
     if (movie) {
       const updates = {};
-      updates[listType] = true;
+      updates[listType] = action === "add" ? true : false;
 
       await knex("movies")
         .update(updates)
         .where("id", id)
         .where("user_id", userId);
-
       res.status(204).json({ message: "Movie updated successfully" });
     } else {
       await knex("movies").insert({
@@ -75,25 +74,6 @@ router.post("/update", authorize, async (req, res) => {
     }
   } catch (error) {
     console.error("Error updating movie:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-router.delete("/:id", authorize, async (req, res) => {
-  const { id } = req.params;
-  const { userId } = req.decoded;
-
-  try {
-    const movie = await knex("movies")
-      .where("id", id)
-      .where("user_id", userId)
-      .first();
-
-    await knex("movies").where("id", id).where("user_id", userId).del();
-
-    res.status(200).json({ message: "Movie deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting movie:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
