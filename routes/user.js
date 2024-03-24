@@ -9,7 +9,6 @@ const secretKey = process.env.JSON_SECRET_KEY;
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  console.log(req.body);
   try {
     const user = await knex("user").where("username", username).first();
     if (user) {
@@ -18,7 +17,6 @@ router.post("/login", async (req, res) => {
 
       if (passwordMatch) {
         delete user.password;
-        console.log(user);
         const token = jwt.sign(
           { userId: user.id, userName: user.username },
           secretKey,
@@ -29,15 +27,11 @@ router.post("/login", async (req, res) => {
         res.status(200).json({ message: "Login successful", user, token });
       } else {
         // Passwords don't match
-        // res
-        //   .status(401)
-        //   .json({ message: "Invalid username, email, or password" });
         res.status(401).send("Invalid password!");
       }
     } else {
       // User not found`
       res.status(401).send("Invalid username or email!");
-      // res.status(401).json({ message: "Invalid username, email, or password" });
     }
   } catch (error) {
     console.error("Error during login:", error);
@@ -47,7 +41,6 @@ router.post("/login", async (req, res) => {
 
 router.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
-
   if (!username || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -61,7 +54,6 @@ router.post("/register", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = uuidv4();
-
     await knex("user").insert({
       id: userId,
       username,

@@ -97,7 +97,6 @@ async function fetchMoviesWithRetry(query, retries = 20, delay = 10) {
         }
       );
       if (![200, 304, 404].includes(response.status)) {
-        console.log(response.status);
         throw new Error(`Request failed`);
       }
       const movies = response.data.results.map((movie) => ({
